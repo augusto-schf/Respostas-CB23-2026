@@ -53,7 +53,7 @@ class TestValidaTag(unittest.TestCase):
 
     def test_tag_invalida_quatro_numeros(self):
         """Tag com quatro números, valida_tag retorna False"""
-        self.assertFalse(valida_tag("PT1034"), [])
+        self.assertFalse(valida_tag("PT4141"), [])
 
 
 if __name__ == "__main__":
