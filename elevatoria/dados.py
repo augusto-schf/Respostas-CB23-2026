@@ -60,7 +60,8 @@ def valida_tag(s: str) -> bool:
     Use `fullmatch`. Válidas: `"PT101"`, `"FT201"`, `"B1"`. Inválidas: `"pt101"`, `"PT"`,
     `"PT1010"`, `"101PT"` e `"PT101 "` (sobra de caracteres).
     """
-    raise NotImplementedError("issue #1: valida_tag")
+
+    return re.fullmatch(r"[A-Z]{1,2}[0-9]{1,3}", s) != None
 
 
 def ler_log(texto: str) -> tuple[list[Registro], list[str]]:
@@ -81,6 +82,14 @@ def ler_log(texto: str) -> tuple[list[Registro], list[str]]:
       (`contagens=1623` vira `1623.0`; `evento=partida` continua `"partida"`);
     - texto vazio devolve `([], [])`.
     """
+    linhas = texto.split("\n") # quebra o texto em linhas e filtra as linhas em branco
+    linhas = list(filter(lambda l : len(l) > 0, map(lambda l : l.trim(), linhas)))
+
+    validas = []
+    invalidas = []
+
+    
+    
     raise NotImplementedError("issue #1: ler_log")
 
 
