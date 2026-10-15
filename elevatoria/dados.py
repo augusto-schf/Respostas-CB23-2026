@@ -82,15 +82,62 @@ def ler_log(texto: str) -> tuple[list[Registro], list[str]]:
       (`contagens=1623` vira `1623.0`; `evento=partida` continua `"partida"`);
     - texto vazio devolve `([], [])`.
     """
+    if len(texto) == 0:
+        return ([], [])
+    
     linhas = texto.split("\n") # quebra o texto em linhas e filtra as linhas em branco
-    linhas = list(filter(lambda l : len(l) > 0, map(lambda l : l.trim(), linhas)))
+    linhas = list(filter(lambda l : len(l.strip()) > 0, linhas))
 
     validas = []
     invalidas = []
 
-    
-    
-    raise NotImplementedError("issue #1: ler_log")
+    for linha in linhas:
+        # checa se a linha é válida
+        _linha = re.fullmatch(LINHA, linha.strip())
+        if not _linha:
+            invalidas.append(linha)
+            continue
+
+        # atributos
+        data = _linha.group("data")
+        hora = _linha.group("hora")
+        lvl = _linha.group("nivel")
+        tag = _linha.group("tag")
+        resto = _linha.group("resto")
+
+        # checa se a tag é válida
+        if not valida_tag(tag):
+            invalidas.append(linha)
+            continue
+
+        # checa a validez das datas
+        try:
+            instant = datetime.strptime(
+                f"{data} {hora}", "%Y-%m-%d %H:%M:%S"
+            )
+        except ValueError:
+            invalidas.append(linha)
+            continue
+
+        # evalua o resto
+        pares = re.findall(r"(\w+)=(\S+)", resto)
+        # nao tem resto
+        if not pares:
+            invalidas.append(linha)
+            continue
+
+        # cria o dicionario do resto
+        valores = {}
+        for chave, valor in pares:
+            try:
+                valores[chave] = float(valor)
+            except ValueError:
+                valores[chave] = valor
+
+        # cria a instância do registro
+        validas.append(Registro(instante=instant, nivel=lvl, tag=tag, valores=valores))
+
+    return validas, invalidas
 
 
 def por_tag(registros: list[Registro], tag: str) -> list[Registro]:
@@ -104,7 +151,10 @@ def contagem_por_tag(registros: list[Registro]) -> dict[str, int]:
     Use uma compreensão de dicionário sobre o conjunto das tags, obtido por uma compreensão
     de conjunto. Lista vazia devolve `{}`.
     """
-    raise NotImplementedError("issue #1: contagem_por_tag")
+    # filtra tags repetidas
+    tags_sem_repeticao = {r.tag for r in registros}
+    #faz a contagem de quantas vezes a tag aparece
+    return {tag: sum(1 for r in registros if r.tag == tag) for tag in tags_sem_repeticao}
 
 
 def serie(registros: list[Registro], tag: str, chave: str) -> SerieTemporal:
@@ -113,7 +163,9 @@ def serie(registros: list[Registro], tag: str, chave: str) -> SerieTemporal:
     Os registros da tag sem essa chave (por exemplo, os alarmes de PT102, que não têm
     `contagens`) são ignorados. Crie a série com `SerieTemporal.de_lista`.
     """
-    raise NotImplementedError("issue #1: serie")
+    # filtra os registros inválidos usando filter e retorna a SerieTemporal
+    _registros = list(filter(lambda r : r.tag == tag and r.valores.get(chave), registros))
+    return SerieTemporal.de_lista(_registros)
 
 
 # ---------------------------------------------------------------------------------------
