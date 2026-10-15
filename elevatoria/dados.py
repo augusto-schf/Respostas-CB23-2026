@@ -164,7 +164,7 @@ def serie(registros: list[Registro], tag: str, chave: str) -> SerieTemporal:
     `contagens`) são ignorados. Crie a série com `SerieTemporal.de_lista`.
     """
     # filtra os registros inválidos usando filter e retorna a SerieTemporal
-    _registros = list(filter(lambda r : r.tag == tag and r.valores.get(chave), registros))
+    _registros = list(map(lambda r : r.valores.get(chave), filter(lambda r : r.tag == tag and r.valores.get(chave), registros)))
     return SerieTemporal.de_lista(_registros)
 
 
